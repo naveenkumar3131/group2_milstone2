@@ -1,0 +1,38 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class timerScript : MonoBehaviour
+
+{
+    private float timeLimit;
+
+    // SetDifficulty method to set the time limit based on difficulty
+    public void SetDifficulty(string difficulty)
+    {
+        switch (difficulty)
+        {
+            case "easy":
+                timeLimit = 60f;  // More time, fewer ingredients
+                break;
+            case "medium":
+                timeLimit = 45f;  // Moderate time, more ingredients
+                break;
+            case "hard":
+                timeLimit = 30f;  // Less time, most ingredients
+                break;
+            default:
+                Debug.LogError("Unknown difficulty level");
+                break;
+        }
+
+        SetupGame();
+    }
+
+    // A placeholder for your game setup logic
+    private void SetupGame()
+    {
+        // Add your game setup code here
+        Debug.Log("Game setup complete with time limit: " + timeLimit);
+    }
+}
