@@ -1,0 +1,71 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class RecipeManager : MonoBehaviour
+{
+    public List<Ingredient> recipeIngredients; // List of ingredients in the recipe
+    public int currentRecipeIndex = 0; // Tracks the current ingredient in the sequence
+    public float timeLimit = 10f; // Time limit for the level
+    public float currentTime = 0f;
+
+    void OnEnable()
+    {
+        Ingredient.IngredientTapped += OnIngredientTapped;
+    }
+
+    void OnDisable()
+    {
+        Ingredient.IngredientTapped -= OnIngredientTapped;
+    }
+
+    void Start()
+    {
+        SetRandomRecipe(); // Set a random recipe to start
+        currentTime = timeLimit;
+    }
+
+    void Update()
+    {
+        currentTime -= Time.deltaTime;
+
+        if (currentTime <= 0)
+        {
+            Debug.Log("Time's up! You failed the recipe.");
+        }
+    }
+
+    // Set a random recipe with 2-3 ingredients
+    void SetRandomRecipe()
+    {
+        // Create a basic random recipe (you can expand this for real use)
+        recipeIngredients = new List<Ingredient>();
+        Ingredient dough = GameObject.Find("Dough").GetComponent<Ingredient>();
+        Ingredient water = GameObject.Find("Water").GetComponent<Ingredient>();
+        recipeIngredients.Add(dough);
+        recipeIngredients.Add(water);
+
+        currentRecipeIndex = 0;
+    }
+
+    void OnIngredientTapped(Ingredient tappedIngredient)
+    {
+        if (tappedIngredient == recipeIngredients[currentRecipeIndex])
+        {
+            Debug.Log("Correct ingredient tapped: " + tappedIngredient.ingredientName);
+            currentRecipeIndex++;
+
+            if (currentRecipeIndex >= recipeIngredients.Count)
+            {
+                Debug.Log("Recipe complete!");
+                SetRandomRecipe(); // Move on to the next recipe
+                currentRecipeIndex = 0;
+            }
+        }
+        else
+        {
+            Debug.Log("Wrong ingredient tapped: " + tappedIngredient.ingredientName);
+            currentRecipeIndex = 0; // Reset the sequence on failure
+        }
+    }
+}
