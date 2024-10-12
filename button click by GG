@@ -1,0 +1,76 @@
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine.UIElements;
+
+public class Ingredient : MonoBehaviour
+{
+    public string ingredientName;   // Name of the ingredient (e.g. "Dough", "Water")
+    public int tapCountRequired;    // Number of taps required
+    private int currentTapCount = 0; // Counter for taps
+
+    public delegate void OnIngredientTapped(Ingredient ingredient);
+    public static event OnIngredientTapped IngredientTapped;
+
+    public Vector3 originalScale;
+    public float scaleUpAmount = 1.2f;  // Amount to scale up
+    public float animationDuration = 0.2f;  // Time for the animation
+
+    private bool isAnimating = false;
+
+    void Start()
+    {
+        originalScale = transform.localScale;
+    }
+
+    // Function to handle tapping on the ingredient
+    void OnMouseDown()
+    {
+        if (isAnimating) return; // Avoid clicking during animation
+
+        currentTapCount++;
+        AnimateClick();
+        Debug.Log("Tap count: " + currentTapCount);
+
+        if (currentTapCount >= tapCountRequired)
+        {
+            IngredientTapped?.Invoke(this); // Notify that ingredient is tapped enough
+            currentTapCount = 0; // Reset for next round
+        }
+    }
+
+    // Animate the button when clicked (scaling up and then down)
+    void AnimateClick()
+    {
+        StartCoroutine(ScaleUpDown());
+    }
+
+    // Coroutine to handle scale up and down
+    IEnumerator ScaleUpDown()
+    {
+        isAnimating = true;
+
+        // Scale up
+        Vector3 targetScale = originalScale * scaleUpAmount;
+        float time = 0f;
+        while (time < animationDuration)
+        {
+            transform.localScale = Vector3.Lerp(originalScale, targetScale, time / animationDuration);
+            time += Time.deltaTime;
+            yield return null;
+        }
+        transform.localScale = targetScale;
+
+        // Scale down
+        time = 0f;
+        while (time < animationDuration)
+        {
+            transform.localScale = Vector3.Lerp(targetScale, originalScale, time / animationDuration);
+            time += Time.deltaTime;
+            yield return null;
+        }
+        transform.localScale = originalScale;
+
+        isAnimating = false;
+    }
+}
