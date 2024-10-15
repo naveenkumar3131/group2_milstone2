@@ -133,5 +133,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4fb1af9f8e701e249904872cffdd44d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  IngredientName: Lime
-  tapCountRequired: 0
+  ingredientName: Lime
+  recipeManager: {fileID: 0}
