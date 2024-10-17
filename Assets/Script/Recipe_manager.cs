@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 
 public class RecipeManager : MonoBehaviour
 {
@@ -18,7 +19,10 @@ public class RecipeManager : MonoBehaviour
     private List<Ingredient> recipe1;
     private List<Ingredient> recipe2;
     private List<Ingredient> recipe3;
-
+    private string RecipeString = "";
+    
+    public TextMeshProUGUI RecipeText;
+    
     void Start()
     {
         // Define the recipes
@@ -26,6 +30,19 @@ public class RecipeManager : MonoBehaviour
 
         // Set a random recipe at the start of the game
         SetRandomRecipe();
+
+        if (recipeIngredients != null)
+        {
+            for (int i = 0; i < recipeIngredients.Count; i++)
+            {
+                RecipeString += $" {i + 1}. ";
+                RecipeString += recipeIngredients[i].ingredientName;
+                
+            }
+        }
+        
+        RecipeText.text = RecipeString;
+
     }
 
     // Function to define the recipes
@@ -170,6 +187,12 @@ public class RecipeManager : MonoBehaviour
             Destroy(spawnedSquare);
             Debug.Log("Previous square destroyed.");
         }
+    }
+
+
+    public void OnPinkIngredientTap()
+    {
+        Debug.Log("Pink ingredient Tapped");
     }
 }
 
