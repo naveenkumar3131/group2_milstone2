@@ -1,0 +1,37 @@
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class TimerScript : MonoBehaviour
+{
+    public TextMeshProUGUI timerText;  // Reference to the Text component for the timer
+    private float timepass = 30f;  // Timer countdown (starts from 60 seconds)
+    private bool isTimerVisible = false;  // To track whether the timer should be visible
+
+    void Update()
+    {
+        // If the timer is visible, keep counting down
+        if (isTimerVisible == true)
+        {
+            timepass -= Time.deltaTime;  // Decrease time each frame
+            timerText.text = Mathf.CeilToInt(timepass).ToString();  // Update the timer display
+
+            // If the timer reaches zero, reset to 60 seconds
+            if (timepass <= 0)
+            {
+                ShowTimer();
+                
+                Debug.Log("Timer is up!");
+                timepass = 30f;  // Reset timer
+            }
+        }
+    }
+
+    // Function to make the timer visible when the button is clicked
+    public void ShowTimer()
+    {
+        timerText.gameObject.SetActive(true);  // Show the timer on the screen
+        isTimerVisible = true;  // Start counting down
+        timepass = 30f;  // Reset timer to 60 seconds
+    }
+}
