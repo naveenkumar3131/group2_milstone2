@@ -1,0 +1,200 @@
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+using TMPro;
+
+public class RecipeManager : MonoBehaviour
+{
+    public List<Ingredient> recipeIngredients; // List of ingredients in the current recipe
+    private int currentIngredientIndex = 0; // Tracks which ingredient in the recipe we are on
+    private int currentRecipeIndex = 0; // Tracks the current recipe (0: recipe1, 1: recipe2, 2: recipe3)
+
+    public GameObject diamondPrefab; // Prefab to spawn when recipe is completed successfully
+    public GameObject squarePrefab;  // Prefab to spawn when wrong ingredient is tapped
+
+    // References to the last spawned objects
+    private GameObject spawnedDiamond;
+    private GameObject spawnedSquare;
+
+    // Define the three recipes
+    private List<Ingredient> recipe1;
+    private List<Ingredient> recipe2;
+    private List<Ingredient> recipe3;
+
+    public TextMeshProUGUI RecipeText;
+
+    void Start()
+    {
+        // Define the recipes
+        DefineRecipes();
+
+        // Set the first recipe at the start of the game
+        SetNextRecipe();
+    }
+
+    // Function to define the recipes
+    void DefineRecipes()  //make a class for recipes and make a scriptable object for recipe
+    {
+        // Get references to the ingredients (ensure these objects have an Ingredient script attached)
+        Ingredient pinkIngredient = GameObject.Find("Pink").GetComponent<Ingredient>();   //use public variable replace find
+        Ingredient limeIngredient = GameObject.Find("Lime").GetComponent<Ingredient>();
+        Ingredient greenIngredient = GameObject.Find("Green").GetComponent<Ingredient>();
+        Ingredient yellowIngredient = GameObject.Find("Yellow").GetComponent<Ingredient>();
+        Ingredient brownIngredient = GameObject.Find("Brown").GetComponent<Ingredient>();
+
+        // Assign the RecipeManager reference to each ingredient
+        pinkIngredient.recipeManager = this;
+        limeIngredient.recipeManager = this;
+        greenIngredient.recipeManager = this;
+        yellowIngredient.recipeManager = this;
+        brownIngredient.recipeManager = this;
+
+        // Define the 3 recipes
+        recipe1 = new List<Ingredient> { pinkIngredient, limeIngredient, brownIngredient };
+        recipe2 = new List<Ingredient> { limeIngredient, greenIngredient, yellowIngredient };
+        recipe3 = new List<Ingredient> { pinkIngredient, limeIngredient, greenIngredient };
+    }
+
+    // Function to set the next recipe in sequence
+    void SetNextRecipe()
+    {
+        // Before setting a new recipe, clear any previously spawned objects
+        ClearSpawnedObjects();
+
+        // Clear the previous recipe
+        recipeIngredients = new List<Ingredient>();
+
+        // Cycle through the recipes
+        if (currentRecipeIndex == 0)
+        {
+            recipeIngredients = recipe1;
+            Debug.Log("Selected Recipe 1: Pink + Lime + Brown");
+        }
+        else if (currentRecipeIndex == 1)
+        {
+            recipeIngredients = recipe2;
+            Debug.Log("Selected Recipe 2: Lime + Green + Yellow");
+        }
+        else if (currentRecipeIndex == 2)
+        {
+            recipeIngredients = recipe3;
+            Debug.Log("Selected Recipe 3: Pink + Lime + Green");
+        }
+
+        // Update the recipe display
+        UpdateRecipeDisplay();
+
+        currentIngredientIndex = 0; // Start with the first ingredient in the recipe
+
+        // Move to the next recipe for the next cycle
+        currentRecipeIndex = (currentRecipeIndex + 1) % 3; // Loop between 0, 1, 2
+    }
+
+    // Function to update the recipe display
+    void UpdateRecipeDisplay()
+    {
+        string RecipeString = "Recipe:\n";
+        for (int i = 0; i < recipeIngredients.Count; i++)
+        {
+            RecipeString += $" {i + 1}. {recipeIngredients[i].ingredientName}\n";
+        }
+
+        RecipeText.text = RecipeString;
+    }
+
+    // Function that gets called when an ingredient is tapped
+    public void OnIngredientTapped(Ingredient tappedIngredient)
+    {
+        // Check if the tapped ingredient is the one we expect in the recipe
+        if (tappedIngredient == recipeIngredients[currentIngredientIndex])
+        {
+            Debug.Log($"Correct ingredient tapped: {tappedIngredient.ingredientName}");
+
+            // Move to the next ingredient in the recipe
+            currentIngredientIndex++;
+
+            // Check if the recipe is complete
+            if (currentIngredientIndex >= recipeIngredients.Count)
+            {
+                Debug.Log("Recipe complete!");
+                SpawnDiamond(); // Spawn a diamond on successful completion of the recipe
+
+                // Start the next recipe after a delay using a timer coroutine
+                StartCoroutine(WaitForNextRecipe(2)); // Wait for 2 seconds before showing the next recipe
+            }
+        }
+        else
+        {
+            // If the wrong ingredient is tapped, reset and spawn a square
+            Debug.Log("Wrong ingredient tapped, resetting.");
+            SpawnSquare(); // Spawn a square for wrong ingredient tapped
+            currentIngredientIndex = 0;
+
+            // Start the next recipe after a delay using a timer coroutine
+            StartCoroutine(WaitForNextRecipe(2)); // Wait for 2 seconds before showing the next recipe
+        }
+    }
+
+    // Coroutine to wait before setting the next recipe
+    IEnumerator WaitForNextRecipe(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        SetNextRecipe();
+    }
+
+    // Function to spawn a diamond when the recipe is completed successfully
+    void SpawnDiamond()
+    {
+        if (diamondPrefab != null)
+        {
+            // Destroy previous diamond if it exists
+            if (spawnedDiamond != null)
+            {
+                Destroy(spawnedDiamond);
+            }
+
+            spawnedDiamond = Instantiate(diamondPrefab, new Vector3(0, 0, 0), diamondPrefab.transform.rotation);
+            Debug.Log("Diamond spawned for completing the recipe.");
+        }
+        else
+        {
+            Debug.LogError("Diamond prefab is not assigned in the inspector.");
+        }
+    }
+
+    // Function to spawn a square when the wrong ingredient is tapped
+    void SpawnSquare()
+    {
+        if (squarePrefab != null)
+        {
+            // Destroy previous square if it exists
+            if (spawnedSquare != null)
+            {
+                Destroy(spawnedSquare);
+            }
+
+            spawnedSquare = Instantiate(squarePrefab, new Vector3(0, 0, 0), squarePrefab.transform.rotation);
+            Debug.Log("Square spawned for wrong ingredient.");
+        }
+        else
+        {
+            Debug.LogError("Square prefab is not assigned in the inspector.");
+        }
+    }
+
+    // Function to clear any spawned objects (diamond or square) before a new recipe starts
+    void ClearSpawnedObjects()
+    {
+        if (spawnedDiamond != null)
+        {
+            Destroy(spawnedDiamond);
+            Debug.Log("Previous diamond destroyed.");
+        }
+
+        if (spawnedSquare != null)
+        {
+            Destroy(spawnedSquare);
+            Debug.Log("Previous square destroyed.");
+        }
+    }
+}
